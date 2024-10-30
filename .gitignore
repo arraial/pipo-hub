@@ -7,6 +7,7 @@ docs/_static
 docs/_diagrams
 requirements.txt
 .secrets.*
+.DS_Store
 
 ### PyCharm+all ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider

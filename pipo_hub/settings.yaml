@@ -1,0 +1,126 @@
+default:
+  log:
+    level: INFO
+    encoding: utf-8
+    format: "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+  probes:
+    port: 80
+    log_level: info
+    readiness:
+      timeout: 5
+  # Application name
+  app:
+  # Discord channel
+  channel:
+  # Discord default voice channel
+  voice_channel:
+  server_id: "@format {this.CHANNEL}"
+  bot_description: Discord Music Bot
+  main_task_name: "main_task"
+  commands:
+    prefix: "-"
+    # ensure same values are used in help messages
+    search: -q
+    shuffle: -s
+    help:
+      category: Other
+  pipo:
+    move_message_delay: 0.2       # seconds
+    check_if_playing_frequency: 3 # seconds
+    on_exit_disconnect_timeout: 5 # seconds
+    ffmpeg_config:
+      options: "-vn"
+      before_options: "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
+  player:
+    get_music_timeout: 300        # 5 minutes
+    task_name: play_music_queue
+    messages:
+      play_error: Unable to play next music. Skipping.
+      long_queue: "@int @format {this.PLAYER__QUEUE__MAX_LOCAL_MUSIC}"
+      unavailable_status: Status unavailable for used queue type.
+      disconnect:
+        - "Bye bye!!!"
+    idle:
+      task_name: idle_tracker
+      timeout: 900  # 15 minutes
+    queue:
+      broker:
+        host:
+        vhost:
+        port:
+        timeout: 240
+        graceful_timeout: 480     # TODO check if (mili)seconds
+        max_consumers: 10
+      max_local_music: 10
+      requests:
+        max: 100
+        timeout: 43200            # seconds
+      timeout:
+        get_op: 30                # seconds
+        consume: 900              # 15 minutes
+      service:
+        parking_lot:
+          queue: plq
+          durable: true
+        dead_letter:
+          exchange:
+            name: dlx
+            durable: true
+          queue:
+            name: dlq
+            routing_key: "dl.#"
+            durable: true
+            args:
+              x-queue-type: quorum
+              x-delivery-limit: 3
+              x-dead-letter-exchange: "@format {this.PLAYER__QUEUE__SERVICE__PARKING_LOT__QUEUE}"
+              message-ttl: 86400000 # 24 hour
+        dispatcher:
+          queue: dispatcher
+          args:
+            x-dead-letter-exchange: "@format {this.PLAYER__QUEUE__SERVICE__DEAD_LETTER__EXCHANGE__NAME}"
+            x-dead-letter-routing-key: "dl.dispatch"
+            x-queue-type: quorum
+            x-delivery-limit: 3
+            message-ttl: 3600000  # 1 hour
+        hub:
+          queue: "@format hub_{this.SERVER_ID}"
+          base_routing_key: "hub"
+          routing_key: "@format hub.{this.SERVER_ID}"
+          exchange: processed_music
+          exclusive: true
+          durable: true
+          args:
+            x-dead-letter-exchange: "@format {this.PLAYER__QUEUE__SERVICE__DEAD_LETTER__EXCHANGE__NAME}"
+            x-dead-letter-routing-key: "dl.hub"
+            message-ttl: 43200000 # 12 hours
+            x-expires: 86400000   # 24 hours
+    url_fetch:
+      lock_timeout: 3 # seconds
+      timeout: 600    # seconds
+      pool_size: 2
+      retries: 3
+      wait: 1
+    source:
+      youtube:
+        playlist_parser_config:
+          extract_flat: true
+        downloader_config: # YoutubeDL music download method args
+          format: bestaudio/best
+      spotify:
+        playlist:
+          limit: 50
+          filter: "items.track.name,items.track.artists.name"
+        album:
+          limit: 50     # max allowed by Spotify API
+test:
+  dynaconf_merge: true
+  log:
+    level: DEBUG
+  channel: "test-channel"
+  voice_channel: "test-vchannel"
+  server_id: "TEST"
+  player:
+    queue:
+      remote: false
+      max_local_music: 100
