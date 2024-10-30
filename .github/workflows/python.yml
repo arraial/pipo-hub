@@ -16,7 +16,7 @@ jobs:
     name: Test Application
     runs-on: ubuntu-22.04
     env:
-      APP: pipo
+      APP: pipo_hub
     strategy:
       fail-fast: false
       matrix:
@@ -83,7 +83,5 @@ jobs:
     - name: Test
       run: |
         poetry run dynaconf write yaml -y -p ./tests/ -e test \
-          -s spotify_client=${{ secrets.TEST_SPOTIFY_CLIENT }} \
-          -s spotify_secret=${{ secrets.TEST_SPOTIFY_SECRET }} \
           -s queue_broker_url=${{ secrets.TEST_RABBITMQ_URL }}; \
         make test

@@ -59,30 +59,8 @@ default:
         get_op: 30                # seconds
         consume: 900              # 15 minutes
       service:
-        parking_lot:
-          queue: plq
-          durable: true
-        dead_letter:
-          exchange:
-            name: dlx
-            durable: true
-          queue:
-            name: dlq
-            routing_key: "dl.#"
-            durable: true
-            args:
-              x-queue-type: quorum
-              x-delivery-limit: 3
-              x-dead-letter-exchange: "@format {this.PLAYER__QUEUE__SERVICE__PARKING_LOT__QUEUE}"
-              message-ttl: 86400000 # 24 hour
         dispatcher:
           queue: dispatcher
-          args:
-            x-dead-letter-exchange: "@format {this.PLAYER__QUEUE__SERVICE__DEAD_LETTER__EXCHANGE__NAME}"
-            x-dead-letter-routing-key: "dl.dispatch"
-            x-queue-type: quorum
-            x-delivery-limit: 3
-            message-ttl: 3600000  # 1 hour
         hub:
           queue: "@format hub_{this.SERVER_ID}"
           base_routing_key: "hub"
@@ -91,28 +69,10 @@ default:
           exclusive: true
           durable: true
           args:
-            x-dead-letter-exchange: "@format {this.PLAYER__QUEUE__SERVICE__DEAD_LETTER__EXCHANGE__NAME}"
+            x-dead-letter-exchange: dlx
             x-dead-letter-routing-key: "dl.hub"
             message-ttl: 43200000 # 12 hours
             x-expires: 86400000   # 24 hours
-    url_fetch:
-      lock_timeout: 3 # seconds
-      timeout: 600    # seconds
-      pool_size: 2
-      retries: 3
-      wait: 1
-    source:
-      youtube:
-        playlist_parser_config:
-          extract_flat: true
-        downloader_config: # YoutubeDL music download method args
-          format: bestaudio/best
-      spotify:
-        playlist:
-          limit: 50
-          filter: "items.track.name,items.track.artists.name"
-        album:
-          limit: 50     # max allowed by Spotify API
 test:
   dynaconf_merge: true
   log:

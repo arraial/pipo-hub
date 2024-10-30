@@ -7,7 +7,6 @@ from opentelemetry.sdk.trace import TracerProvider
 from prometheus_client import REGISTRY
 from faststream.rabbit import (
     ExchangeType,
-    RabbitBroker,
     RabbitExchange,
     RabbitQueue,
 )
@@ -53,39 +52,8 @@ async def readiness() -> bool:
     return await router.broker.ping(timeout=settings.probes.readiness.timeout)
 
 
-plq = RabbitQueue(
-    name=settings.player.queue.service.parking_lot.queue,
-    durable=settings.player.queue.service.parking_lot.durable,
-)
-
-dlx = RabbitExchange(
-    name=settings.player.queue.service.dead_letter.exchange.name,
-    type=ExchangeType.TOPIC,
-    durable=settings.player.queue.service.dead_letter.exchange.durable,
-)
-
-dlq = RabbitQueue(
-    name=settings.player.queue.service.dead_letter.queue.name,
-    durable=settings.player.queue.service.dead_letter.queue.durable,
-    routing_key=settings.player.queue.service.dead_letter.queue.routing_key,
-    arguments=settings.player.queue.service.dead_letter.queue.args,
-)
-
-
-async def declare_dlx(b: RabbitBroker):
-    await b.declare_queue(plq)
-    await b.declare_exchange(dlx)
-    await b.declare_queue(dlq)
-
-
-dispatcher_queue = RabbitQueue(
-    settings.player.queue.service.dispatcher.queue,
-    durable=True,
-    arguments=settings.player.queue.service.dispatcher.args,
-)
-
 server_publisher = broker.publisher(
-    dispatcher_queue,
+    settings.player.queue.service.dispatcher.queue,
     description="Produces to dispatch queue",
 )
 
