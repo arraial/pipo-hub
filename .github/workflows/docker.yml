@@ -55,7 +55,7 @@ jobs:
         echo platforms=${{ steps.platforms.outputs.matrix }} >> $GITHUB_OUTPUT
         echo version=${TAG%%-*} >> $GITHUB_OUTPUT
       env:
-        IMAGE: ${{ env.CONTAINER_TAG }}
+        IMAGE: ${{ vars.CONTAINER_TAG }}
         TAG: ${{ steps.version.outputs.version }}
 
     - name: Extract metadata for Docker
