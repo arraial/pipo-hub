@@ -51,10 +51,11 @@ jobs:
       id: prepare
       shell: bash
       run: |
-        echo image=${CONTAINER_TAG@L} >> $GITHUB_OUTPUT
+        echo image=${IMAGE@L} >> $GITHUB_OUTPUT
         echo platforms=${{ steps.platforms.outputs.matrix }} >> $GITHUB_OUTPUT
         echo version=${TAG%%-*} >> $GITHUB_OUTPUT
       env:
+        IMAGE: ${{ env.CONTAINER_TAG }}
         TAG: ${{ steps.version.outputs.version }}
 
     - name: Extract metadata for Docker
