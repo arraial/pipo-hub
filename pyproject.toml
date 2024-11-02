@@ -36,22 +36,16 @@ uuid6 = "^2024.7"
 requests = "^2.32"
 pydantic = "~2.9.0"
 expiringdict = "^1.2"
-fastapi = { version = "~0.115.2", extras = ["standard"] }
+fastapi = { version = "~0.115.4", extras = ["standard"] }
 faststream = { version = "0.5.28", extras = ["rabbit"] }
 dynaconf = { version = "~3.2.0", extras = ["yaml"] }
 discord-py = { version = "~2.4.0", extras = ["voice"] }
-opentelemetry-sdk = { version = "~1.27.0", optional = true }
-opentelemetry-api = { version = "~1.27.0", optional = true }
-opentelemetry-exporter-jaeger = { version = "~1.21.0", optional = true }
-opentelemetry-exporter-prometheus = { version = "0.48b0", optional = true }
 
-[tool.poetry.extras]
-opentelemetry = [
-    "opentelemetry-sdk",
-    "opentelemetry-api",
-    "opentelemetry-exporter-jaeger",
-    "opentelemetry-exporter-prometheus",
-]
+[tool.poetry.group.opentelemetry.dependencies]
+opentelemetry-sdk = { version = "~1.27.0" }
+opentelemetry-api = { version = "~1.27.0" }
+opentelemetry-exporter-jaeger = { version = "~1.21.0" }
+opentelemetry-exporter-prometheus = { version = "0.48b0" }
 
 [tool.poetry.group.dev.dependencies]
 setuptools = "*"

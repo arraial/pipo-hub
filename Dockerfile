@@ -1,5 +1,7 @@
 FROM python:3.11.10-slim-bookworm AS base
 
+ARG POETRY_VERSION=1.8.4
+
 # python
 ENV APP_NAME="pipo_hub" \
     PYTHON_VERSION=3.11.10 \
@@ -16,7 +18,6 @@ ENV APP_NAME="pipo_hub" \
     \
     # poetry
     # https://python-poetry.org/docs/configuration/#using-environment-variables
-    POETRY_VERSION=1.8.4 \
     # make poetry install to this location
     POETRY_HOME="/opt/poetry" \
     # make poetry create the virtual environment in the project's root
@@ -25,6 +26,7 @@ ENV APP_NAME="pipo_hub" \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
     # do not ask interactive questions
     POETRY_NO_INTERACTION=1 \
+    POETRY_CACHE_DIR="/tmp/poetry_cache" \
     \
     # requirements + virtual environment paths
     PYSETUP_PATH="/opt/pysetup" \
@@ -58,16 +60,17 @@ RUN apt-get update \
     && apt-get clean \
     && pip install --ignore-installed distlib --disable-pip-version-check \
         cryptography==3.4.6 \
-        poetry==$POETRY_VERSION
+        poetry==$POETRY_VERSION \
+    && poetry self add poetry-plugin-bundle
 
 # copy project requirement files to ensure they will be cached
 WORKDIR $PYSETUP_PATH
-COPY pyproject.toml ./
+COPY pyproject.toml README.md ./
 ARG PROGRAM_VERSION=0.0.0
 RUN poetry version $PROGRAM_VERSION
 
 # install runtime dependencies, internally uses $POETRY_VIRTUALENVS_IN_PROJECT
-RUN poetry install -n --no-cache --all-extras --without dev
+RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry bundle venv --clear --with opentelemetry --without dev $VENV_PATH
 
 # `production` image used for runtime
 FROM base AS production
@@ -82,7 +85,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
 USER $USERNAME
 
-COPY --from=builder-base --chown=$USERNAME:$USERNAME $PYSETUP_PATH $PYSETUP_PATH
+COPY --from=builder-base --chown=$USERNAME:$USERNAME $VENV_PATH $VENV_PATH
 
 # install application
 COPY ./${APP_NAME} /${APP_NAME}/

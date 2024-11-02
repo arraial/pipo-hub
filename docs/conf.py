@@ -1,11 +1,17 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+import importlib.metadata
 
 project = "pipo_hub"
 copyright = "2024, Tiago Gonçalves"
 author = "Tiago Gonçalves, André Gonçalves, Miguel Peixoto"
 
-version = release = "0.1.0"
+try:
+    release = importlib.metadata.version(project)
+except importlib.metadata.PackageNotFoundError:
+    release = "latest"
+
+version = release
 
 nitpicky = True
 
