@@ -4,6 +4,7 @@ import signal
 import contextlib
 from fastapi import FastAPI
 from prometheus_client import REGISTRY, make_asgi_app
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 from pipo_hub.config import settings
 from pipo_hub.bot import PipoBot
@@ -39,4 +40,5 @@ def get_app() -> FastAPI:
     application = FastAPI(lifespan=_run_bot)
     application.mount("/metrics", make_asgi_app(registry=REGISTRY))
     application.include_router(probe_router)
+    FastAPIInstrumentor.instrument_app(application)
     return application
