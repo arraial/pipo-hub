@@ -82,10 +82,10 @@ jobs:
         targets: image-all
         push: ${{ env.PUBLISH }}
         files: |
-            ./docker-bake.hcl
-            ${{ steps.meta.outputs.bake-file }}
+          ./docker-bake.hcl
+          ${{ steps.meta.outputs.bake-file }}
       env:
-        TAG: ${{ steps.version.outputs.version }}
+        TAG: ${{ steps.prepare.outputs.version }}
 
     - name: Update Docker Hub description
       if: ${{ env.PUBLISH }}
@@ -105,14 +105,14 @@ jobs:
         git tag $TAG
         git push origin $TAG
       env:
-        TAG: ${{ steps.version.outputs.version }}
+        TAG: ${{ steps.prepare.outputs.version }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Create Release
       if: ${{ env.PUBLISH }}
       uses: ncipollo/release-action@v1
       with:
-        tag: ${{ steps.version.outputs.version }}
+        tag: ${{ steps.prepare.outputs.version }}
         makeLatest: true
         generateReleaseNotes: true
       env:
