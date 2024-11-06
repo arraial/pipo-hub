@@ -52,7 +52,7 @@ async def readiness() -> bool:
     return await router.broker.ping(timeout=settings.probes.readiness.timeout)
 
 
-server_publisher = broker.publisher(
+server_publisher = router.publisher(
     settings.player.queue.service.dispatcher.queue,
     description="Produces to dispatch queue",
 )

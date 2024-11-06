@@ -11,7 +11,7 @@ from pipo_hub.player.queue import PlayerQueue
 from pipo_hub.player.music_queue.models.music import Music
 from pipo_hub.player.music_queue.models.music_request import MusicRequest
 from pipo_hub.player.music_queue._remote_music_queue import (
-    broker,
+    router,
     hub_queue,
     hub_exch,
     server_publisher,
@@ -105,7 +105,7 @@ music_queue = __RemoteMusicQueue(
 )
 
 
-@broker.subscriber(
+@router.subscriber(
     queue=hub_queue,
     exchange=hub_exch,
     description="Consumes from hub exchange bound hub client exclusive queue",
