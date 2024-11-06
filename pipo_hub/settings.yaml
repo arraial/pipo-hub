@@ -9,7 +9,7 @@ default:
     readiness:
       timeout: 5
   # Application name
-  app:
+  app: pipo_hub
   # Discord channel
   channel:
   # Discord default voice channel
