@@ -40,6 +40,7 @@ dynaconf = { version = "~3.2.0", extras = ["yaml"] }
 discord-py = { version = "~2.4.0", extras = ["voice"] }
 fastapi = { version = "~0.115.4", extras = ["standard"] }
 faststream = { version = "0.5.28", extras = ["rabbit", "prometheus"] }
+audioop-lts = { version = "^0.2.1", python = "^3.13" }
 
 [tool.poetry.group.opentelemetry.dependencies]
 opentelemetry-exporter-prometheus = "0.48b0"
