@@ -51,6 +51,12 @@ target "image-local" {
   output = ["type=docker"]
 }
 
+target "test" {
+  target = "test"
+  inherits = ["image-local"]
+  output = ["type=cacheonly"]
+}
+
 target "image" {
   inherits = ["image-local", "docker-metadata-action", "gh-registry-tags"]
   output = ["type=registry"]
