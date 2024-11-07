@@ -8,6 +8,8 @@ default:
     log_level: info
     readiness:
       timeout: 5
+  uvicorn:
+    workers: 3
   # Application name
   app: pipo_hub
   # Discord channel
