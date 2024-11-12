@@ -6,9 +6,10 @@ import tests.constants
 from tests.conftest import Helpers
 
 from pipo_hub.config import settings
+from pipo_hub.broker import load_broker
 from pipo_hub.player.music_queue.music_queue import music_queue
 from pipo_hub.player.music_queue.models.music_request import MusicRequest
-from pipo_hub.player.music_queue._remote_music_queue import broker, server_publisher
+from pipo_hub.player.music_queue.handlers import server_publisher
 
 
 @pytest.mark.wip
@@ -19,7 +20,9 @@ class TestRemoteMusicQueue:
     @pytest.fixture(scope="function", autouse=True)
     async def queue(self):
         # TODO change to with_real later and add handle.wait_call
-        async with TestRabbitBroker(broker, with_real=settings.player.queue.remote):
+        async with TestRabbitBroker(
+            load_broker("test"), with_real=settings.player.queue.remote
+        ):
             yield music_queue
             music_queue.clear()
 

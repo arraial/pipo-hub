@@ -3,6 +3,9 @@ default:
     level: INFO
     encoding: utf-8
     format: "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+  metrics:
+  trace:
+    otlp_endpoint:
   probes:
     port: 80
     log_level: info
