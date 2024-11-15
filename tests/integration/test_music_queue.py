@@ -34,7 +34,6 @@ class TestRemoteMusicQueue:
             (tests.constants.YOUTUBE_URL_SIMPLE_LIST),
         ],
     )
-    @pytest.mark.youtube
     @pytest.mark.asyncio
     async def test_queue_add(self, queue, query):
         expected = MusicRequest(
@@ -57,7 +56,6 @@ class TestRemoteMusicQueue:
             (tests.constants.MUSIC_SIMPLE_LIST_1, 2),
         ],
     )
-    @pytest.mark.query
     @pytest.mark.asyncio
     async def test_individual_add(self, queue, musics, queue_size):
         [await queue.add(music) for music in musics]
@@ -72,7 +70,6 @@ class TestRemoteMusicQueue:
             (tests.constants.MUSIC_SIMPLE_LIST_1, 2),
         ],
     )
-    @pytest.mark.query
     @pytest.mark.asyncio
     async def test_multiple_add(self, queue, musics, queue_size):
         await queue.add(musics)
@@ -86,7 +83,6 @@ class TestRemoteMusicQueue:
             tests.constants.MUSIC_SIMPLE_LIST_1,
         ],
     )
-    @pytest.mark.query
     @pytest.mark.asyncio
     async def test_get_after_individual_add(self, queue, musics):
         [await queue.add(music) for music in musics]
@@ -100,7 +96,6 @@ class TestRemoteMusicQueue:
             tests.constants.MUSIC_SIMPLE_LIST_1,
         ],
     )
-    @pytest.mark.query
     @pytest.mark.asyncio
     async def test_get_after_multiple_add(self, queue, musics):
         await queue.add(musics)
@@ -114,7 +109,6 @@ class TestRemoteMusicQueue:
             tests.constants.MUSIC_SIMPLE_LIST_2,
         ],
     )
-    @pytest.mark.query
     @pytest.mark.asyncio
     async def test_clear(self, queue, musics):
         await queue.add(musics)
