@@ -1,10 +1,14 @@
-FROM python:3.11.10-slim-bookworm AS base
+ARG PYTHON_VERSION=3.11.10
+ARG BASE_OS=slim-bookworm
+ARG BASE_IMAGE=python:${PYTHON_VERSION}-${BASE_OS}
+
+FROM $BASE_IMAGE AS base
 
 ARG POETRY_VERSION=1.8.4
 
 # python
 ENV APP_NAME="pipo_hub" \
-    PYTHON_VERSION=3.11.10 \
+    PYTHON_VERSION=${PYTHON_VERSION} \
     PYTHONUNBUFFERED=1 \
     # prevents python creating .pyc files
     PYTHONDONTWRITEBYTECODE=1 \
@@ -71,6 +75,13 @@ RUN poetry version $PROGRAM_VERSION
 
 # install runtime dependencies, internally uses $POETRY_VIRTUALENVS_IN_PROJECT
 RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry bundle venv --clear --without dev $VENV_PATH
+
+FROM builder-base AS test
+COPY --from=builder-base $VENV_PATH $VENV_PATH
+RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry bundle venv $VENV_PATH
+COPY ./${APP_NAME} ./${APP_NAME}/
+COPY ./tests ./tests
+RUN poetry run pytest .
 
 # `production` image used for runtime
 FROM base AS production

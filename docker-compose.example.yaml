@@ -1,0 +1,47 @@
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+
+services:
+  hub:
+    image: arraial/pipo_hub:latest
+    env_file: .env
+    networks:
+      - frontend
+    deploy:
+      restart_policy:
+        delay: 5s
+        max_attempts: 3
+        condition: on-failure
+  dispatch:
+    image: arraial/pipo_dispatch:latest
+    env_file: .env
+    networks:
+      - backend
+    deploy:
+      restart_policy:
+        delay: 5s
+        max_attempts: 3
+        condition: on-failure
+  transmuter_youtube:
+    image: arraial/pipo_transmuter_youtube:latest
+    env_file: .env
+    networks:
+      - backend
+    deploy:
+      restart_policy:
+        delay: 5s
+        max_attempts: 3
+        condition: on-failure
+  transmuter_spotify:
+    image: arraial/pipo_transmuter_spotify:latest
+    env_file: .env
+    networks:
+      - backend
+    deploy:
+      restart_policy:
+        delay: 5s
+        max_attempts: 3
+        condition: on-failure

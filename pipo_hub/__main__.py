@@ -24,7 +24,8 @@ def main():
         uvicorn.run(
             app,
             port=settings.probes.port,
-            log_level=settings.probes.log_level
+            log_level=settings.probes.log_level,
+            workers=settings.uvicorn.workers,
         )
     except Exception:
         logger.exception("Unexpected exception raised")
