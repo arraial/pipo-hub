@@ -9,7 +9,7 @@ meter = metrics.get_meter(__name__)
 counter = meter.create_counter(
     name="pipo.hub.requests.received",
     description="Number of requests issued to hub",
-    unit="1",
+    unit="requests",
 )
 
 

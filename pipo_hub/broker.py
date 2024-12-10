@@ -11,10 +11,7 @@ from prometheus_client import REGISTRY
 
 
 def load_broker(service_name: str) -> RabbitBroker:
-    telemetry = setup_telemetry(
-        settings.telemetry.trace.service,
-        settings.telemetry.trace.otlp_endpoint,
-    )
+    telemetry = setup_telemetry(service_name, settings.telemetry.local)
     core_router = RabbitBroker(
         app_id=settings.app,
         url=settings.queue_broker_url,

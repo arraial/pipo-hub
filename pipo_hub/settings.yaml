@@ -1,5 +1,7 @@
 default:
   telemetry:
+    service: "@format {this.APP}"
+    local: false
     log:
       level: INFO
       encoding: utf-8
@@ -7,10 +9,6 @@ default:
     metrics:
       service: "@format {this.APP}"
       endpoint: "/metrics"
-      otlp_endpoint:
-    trace:
-      service: "@format {this.APP}"
-      otlp_endpoint:
   probes:
     host: "0.0.0.0"
     port: 8080
@@ -89,12 +87,9 @@ default:
 test:
   dynaconf_merge: true
   telemetry:
+    local: true
     log:
       level: INFO
-    metrics:
-      otlp_endpoint:
-    trace:
-      otlp_endpoint:
   channel: "test-channel"
   voice_channel: "test-vchannel"
   server_id: "TEST"
