@@ -1,25 +1,12 @@
-from opentelemetry import trace
 from faststream.rabbit import (
     ExchangeType,
     RabbitExchange,
     RabbitQueue,
 )
-from faststream.rabbit.fastapi import RabbitRouter
+from faststream.rabbit import RabbitRouter
 from pipo_hub.config import settings
 
-tracer = trace.get_tracer(__name__)
 router = RabbitRouter()
-
-
-@router.get("/livez")
-async def liveness() -> bool:
-    return True
-
-
-@router.get("/readyz")
-async def readiness() -> bool:
-    return await router.broker.ping(timeout=settings.probes.readiness.timeout)
-
 
 server_publisher = router.publisher(
     settings.player.queue.service.dispatcher.queue,

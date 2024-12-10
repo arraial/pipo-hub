@@ -29,6 +29,11 @@ target "_common" {
     "${GITHUB_REPOSITORY_OWNER}/${IMAGE}:${TAG}",
     "${GITHUB_REPOSITORY_OWNER}/${IMAGE}:latest"
   ]
+  labels = {
+    "org.opencontainers.image.version" = "${TAG}"
+    "org.opencontainers.image.authors" = "https://github.com/${GITHUB_REPOSITORY_OWNER}"
+    "org.opencontainers.image.source" = "https://github.com/${GITHUB_REPOSITORY_OWNER}/pipo-hub"
+  }
 }
 
 target "docker-metadata-action" {}

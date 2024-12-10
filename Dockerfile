@@ -1,3 +1,4 @@
+ARG PORT=8080
 ARG PYTHON_VERSION=3.11.10
 ARG BASE_OS=slim-bookworm
 ARG BASE_IMAGE=python:${PYTHON_VERSION}-${BASE_OS}
@@ -101,5 +102,5 @@ COPY --from=builder-base --chown=$USERNAME:$USERNAME $VENV_PATH $VENV_PATH
 # install application
 COPY ./${APP_NAME} /${APP_NAME}/
 
-EXPOSE 80
+EXPOSE $PORT
 ENTRYPOINT "${VENV_PATH}/bin/python" "-m" "${APP_NAME}"

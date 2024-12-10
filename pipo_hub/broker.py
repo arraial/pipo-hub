@@ -7,11 +7,15 @@ from faststream.rabbit.prometheus import RabbitPrometheusMiddleware
 from pipo_hub.player.music_queue.handlers import router
 from pipo_hub.telemetry import setup_telemetry
 from pipo_hub.config import settings
-from prometheus_client import CollectorRegistry
+from prometheus_client import REGISTRY
 
 
 def load_broker(service_name: str) -> RabbitBroker:
-    broker = RabbitBroker(
+    telemetry = setup_telemetry(
+        settings.telemetry.trace.service,
+        settings.telemetry.trace.otlp_endpoint,
+    )
+    core_router = RabbitBroker(
         app_id=settings.app,
         url=settings.queue_broker_url,
         host=settings.player.queue.broker.host,
@@ -24,16 +28,12 @@ def load_broker(service_name: str) -> RabbitBroker:
         security=BaseSecurity(ssl_context=ssl.create_default_context()),
         middlewares=(
             RabbitPrometheusMiddleware(
-                registry=CollectorRegistry(),
-                app_name=service_name,
+                registry=REGISTRY,
+                app_name=settings.telemetry.metrics.service,
                 metrics_prefix="faststream",
             ),
-            RabbitTelemetryMiddleware(
-                tracer_provider=setup_telemetry(
-                    service_name, settings.trace.otlp_endpoint
-                )
-            ),
+            RabbitTelemetryMiddleware(tracer_provider=telemetry.traces or None),
         ),
     )
-    broker.include_router(router)
-    return broker
+    core_router.include_router(router)
+    return core_router
