@@ -1,8 +1,16 @@
 import asyncio
 import logging
 from typing import Set
+from opentelemetry import metrics
 
 from pipo_hub.command.command import Command
+
+meter = metrics.get_meter(__name__)
+counter = meter.create_counter(
+    name="pipo.hub.requests.received",
+    description="Number of requests issued to hub",
+    unit="1",
+)
 
 
 class CommandQueue:
@@ -25,6 +33,7 @@ class CommandQueue:
         command : Command
             Command to execute.
         """
+        counter.add(1)
         task = asyncio.create_task(
             command.execute(), name=f"command_{command.__class__.__name__}"
         )

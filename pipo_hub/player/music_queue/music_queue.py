@@ -1,21 +1,25 @@
 import asyncio
 from typing import Dict, Iterable, Optional
-
+from opentelemetry import trace
+from opentelemetry.trace import SpanKind
 import uuid6
 import faststream.rabbit
 from expiringdict import ExpiringDict
+from faststream.opentelemetry import Baggage
 from faststream.rabbit.fastapi import Logger
 
 from pipo_hub.config import settings
 from pipo_hub.player.queue import PlayerQueue
 from pipo_hub.player.music_queue.models.music import Music
 from pipo_hub.player.music_queue.models.music_request import MusicRequest
-from pipo_hub.player.music_queue._remote_music_queue import (
+from pipo_hub.player.music_queue.handlers import (
     router,
     hub_queue,
     hub_exch,
     server_publisher,
 )
+
+tracer = trace.get_tracer(__name__)
 
 
 class __RemoteMusicQueue(PlayerQueue):
@@ -46,6 +50,7 @@ class __RemoteMusicQueue(PlayerQueue):
     def __generate_uuid() -> str:
         return str(uuid6.uuid7())
 
+    @tracer.start_as_current_span("add_music", kind=SpanKind.CLIENT)
     async def add(self, query: str | Iterable[str], shuffle: bool = False) -> None:
         query = [query] if isinstance(query, str) else query
         uuid = self.__generate_uuid()
@@ -57,7 +62,10 @@ class __RemoteMusicQueue(PlayerQueue):
         )
         self.__requests[request.uuid] = 0
         self._logger.info("Adding request: %s", request.uuid)
-        await self.__publisher.publish(request)
+        headers = Baggage({"request": request.model_dump}).to_headers(
+            {"header-type": "custom"}
+        )
+        await self.__publisher.publish(request, headers=headers)
 
     async def _add_music(self, request: Music):
         music = str(request.source)
