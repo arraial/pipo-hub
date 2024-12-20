@@ -38,19 +38,12 @@ target "_common" {
 
 target "docker-metadata-action" {}
 
-target "gh-registry-tags" {
-  tags = [
-    "ghcr.io/${GITHUB_REPOSITORY_OWNER}/${IMAGE}:${TAG}",
-    "ghcr.io/${GITHUB_REPOSITORY_OWNER}/${IMAGE}:latest"
-  ]
-}
-
 group "default" {
   targets = ["image"]
 }
 
 target "image-local" {
-  inherits = ["_common", ]
+  inherits = ["_common"]
   context = "."
   dockerfile = "Dockerfile"
   output = ["type=docker"]
@@ -63,7 +56,7 @@ target "test" {
 }
 
 target "image" {
-  inherits = ["image-local", "docker-metadata-action", "gh-registry-tags"]
+  inherits = ["image-local", "docker-metadata-action"]
   output = ["type=registry"]
   cache-from = ["type=registry,ref=${GITHUB_REPOSITORY_OWNER}/${IMAGE}:buildcache"]
   cache-to = ["type=registry,ref=${GITHUB_REPOSITORY_OWNER}/${IMAGE}:buildcache,mode=max,image-manifest=true"]
