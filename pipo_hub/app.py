@@ -56,7 +56,7 @@ async def _run_bot(app: FastAPI):
 
 @get
 async def liveness_ping(scope):
-    return AsgiResponse(b"", status_code=200)
+    return AsgiResponse(b"", status_code=settings.probes.liveness.status_code)
 
 
 def create_app(broker=None) -> FastAPI:
