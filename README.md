@@ -1,8 +1,8 @@
 # pipo_hub
-[![License](https://img.shields.io/github/license/sinistro14/pipo)](https://opensource.org/licenses/MIT)
-[![Build](https://github.com/sinistro14/pipo/actions/workflows/docker.yml/badge.svg)](https://github.com/sinistro14/pipo/actions/workflows/docker.yml)
-[![Version](https://img.shields.io/github/v/tag/sinistro14/pipo)](https://github.com/sinistro14/pipo/releases)
-[![Docker Image](https://img.shields.io/docker/image-size/sinistro14/pipo/latest)](https://hub.docker.com/r/sinistro14/pipo)
+[![License](https://img.shields.io/github/license/arraial/pipo-hub)](https://opensource.org/licenses/MIT)
+[![Build](https://github.com/arraial/pipo-hub/actions/workflows/docker.yml/badge.svg)](https://github.com/arraial/pipo-hub/actions/workflows/docker.yml)
+[![Version](https://img.shields.io/github/v/tag/arraial/pipo-hub)](https://github.com/arraial/pipo-hub/releases)
+[![Docker Image](https://img.shields.io/docker/image-size/arraial/pipo_hub/latest)](https://hub.docker.com/r/arraial/pipo_hub)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 [![Sphinx](https://img.shields.io/badge/Docs-Sphinx-%230000?style=flat&logo=sphinx&color=%230A507A)](https://www.sphinx-doc.org/)
 
