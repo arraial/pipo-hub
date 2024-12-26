@@ -6,7 +6,6 @@ import uuid6
 import faststream.rabbit
 from expiringdict import ExpiringDict
 from faststream.opentelemetry import Baggage
-from faststream.rabbit.fastapi import Logger
 
 from pipo_hub.config import settings
 from pipo_hub.player.queue import PlayerQueue
@@ -68,6 +67,7 @@ class __RemoteMusicQueue(PlayerQueue):
         await self.__publisher.publish(request, headers=headers)
 
     async def _add_music(self, request: Music):
+        self._logger.info("Received request: %s", request.uuid)
         music = str(request.source)
         if request.uuid in self.__requests:
             self._logger.debug("Item obtained from remote music queue: %s", music)
@@ -118,6 +118,5 @@ music_queue = __RemoteMusicQueue(
     exchange=hub_exch,
     description="Consumes from hub exchange bound hub client exclusive queue",
 )
-async def consume_music(request: Music, logger: Logger) -> None:
-    logger.info("Received request: %s", request.uuid)
+async def consume_music(request: Music) -> None:
     await music_queue._add_music(request)
