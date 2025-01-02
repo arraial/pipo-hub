@@ -73,7 +73,7 @@ default:
         consume: 900              # 15 minutes
       service:
         dispatcher:
-          queue: dispatcher
+          exchange: dispatcher
         hub:
           queue: "@format hub_{this.SERVER_ID}"
           base_routing_key: "hub"

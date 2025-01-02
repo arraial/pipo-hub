@@ -8,9 +8,15 @@ from pipo_hub.config import settings
 
 router = RabbitRouter()
 
+dispatcher_exch = RabbitExchange(
+    settings.player.queue.service.dispatcher.exchange,
+    type=ExchangeType.DIRECT,
+    durable=True,
+)
+
 server_publisher = router.publisher(
-    settings.player.queue.service.dispatcher.queue,
-    description="Produces to dispatch queue",
+    exchange=dispatcher_exch,
+    description="Produces to dispatcher exchange",
 )
 
 hub_exch = RabbitExchange(

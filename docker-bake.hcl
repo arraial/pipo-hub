@@ -1,13 +1,17 @@
+variable "ARCHS" {
+  default = ["linux/amd64", "linux/arm64"]
+}
+
 variable "IMAGE" {
   default = "pipo_hub"
 }
 
 variable "PYTHON_VERSION" {
-  default = "3.11.10"
+  default = "3.13.3"
 }
 
 variable "POETRY_VERSION" {
-  default = "1.8.4"
+  default = "2.1.2"
 }
 
 variable "TAG" {
@@ -39,7 +43,7 @@ target "_common" {
 target "docker-metadata-action" {}
 
 group "default" {
-  targets = ["image"]
+  targets = ["image-local"]
 }
 
 target "image-local" {
@@ -55,19 +59,29 @@ target "test" {
   output = ["type=cacheonly"]
 }
 
-target "image" {
+target "image-arch" {
   inherits = ["image-local", "docker-metadata-action"]
   output = ["type=registry"]
-  cache-from = ["type=registry,ref=${GITHUB_REPOSITORY_OWNER}/${IMAGE}:buildcache"]
-  cache-to = ["type=registry,ref=${GITHUB_REPOSITORY_OWNER}/${IMAGE}:buildcache,mode=max,image-manifest=true"]
+  sbom = true
+  platforms = ARCHS
+  cache-from = flatten([
+    for arch in ARCHS : "type=registry,ref=${GITHUB_REPOSITORY_OWNER}/${IMAGE}:buildcache-${replace(arch, "/", "-")}"
+  ])
 }
 
-target "image-all" {
-  inherits = ["image"]
-  sbom = true
-  output = ["type=registry"]
-  platforms = [
-   "linux/amd64",
-   "linux/arm64"
-  ]
+target "image-arch-cache" {
+  name = "image-arch-cache-${replace(arch, "/", "-")}"
+  inherits = ["image-local", "docker-metadata-action"]
+  output = ["type=cacheonly"]
+  cache-from = ["type=registry,ref=${GITHUB_REPOSITORY_OWNER}/${IMAGE}:buildcache-${replace(arch, "/", "-")}"]
+  cache-to = ["type=registry,ref=${GITHUB_REPOSITORY_OWNER}/${IMAGE}:buildcache-${replace(arch, "/", "-")},mode=max,oci-mediatypes=true,image-manifest=true"]
+  platform = arch
+  matrix = {
+    arch = ARCHS
+  }
+  depends = ["image-arch"]
+}
+
+group "image-all" {
+  targets = ["image-arch", "image-arch-cache"]
 }

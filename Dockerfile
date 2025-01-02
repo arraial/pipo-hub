@@ -1,11 +1,11 @@
 ARG PORT=8080
-ARG PYTHON_VERSION=3.11.10
+ARG PYTHON_VERSION=3.13.3
 ARG BASE_OS=slim-bookworm
 ARG BASE_IMAGE=python:${PYTHON_VERSION}-${BASE_OS}
 
 FROM $BASE_IMAGE AS base
 
-ARG POETRY_VERSION=1.8.4
+ARG POETRY_VERSION=2.1.2
 
 # python
 ENV APP_NAME="pipo_hub" \
@@ -44,7 +44,7 @@ ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get --no-install-recommends install -y \
-        ffmpeg \
+    ffmpeg \
     && pip install --upgrade pip setuptools wheel \
     && apt-get clean
 
@@ -55,17 +55,17 @@ FROM base AS builder-base
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install --no-install-recommends -y \
-        build-essential \
-        libc-dev \
-        libssl-dev \
-        # discord.py[voice] dependencies
-        python3-dev \
-        libffi-dev \
-        libnacl-dev \
+    build-essential \
+    libc-dev \
+    libssl-dev \
+    # discord.py[voice] dependencies
+    python3-dev \
+    libffi-dev \
+    libnacl-dev \
     && apt-get clean \
     && pip install --ignore-installed distlib --disable-pip-version-check \
-        cryptography==3.4.6 \
-        poetry==$POETRY_VERSION \
+    cryptography==3.4.6 \
+    poetry==$POETRY_VERSION \
     && poetry self add poetry-plugin-bundle
 
 # copy project requirement files to ensure they will be cached
