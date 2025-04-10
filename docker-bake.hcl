@@ -46,8 +46,8 @@ group "default" {
   targets = ["image-local"]
 }
 
-target "image" {
-  inherits = ["_common", "docker-metadata-action"]
+target "image-local" {
+  inherits = ["_common"]
   context = "."
   dockerfile = "Dockerfile"
   output = ["type=docker"]
