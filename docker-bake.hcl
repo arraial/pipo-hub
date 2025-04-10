@@ -55,7 +55,7 @@ target "image-local" {
 
 target "test" {
   target = "test"
-  inherits = ["image"]
+  inherits = ["image-local"]
   output = ["type=cacheonly"]
 }
 
