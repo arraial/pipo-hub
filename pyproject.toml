@@ -37,9 +37,9 @@ requests = "^2.32"
 pydantic = "~2.9.0"
 expiringdict = "^1.2"
 dynaconf = { version = "~3.2.0", extras = ["yaml"] }
-discord-py = { version = "~2.4.0", extras = ["voice"] }
+discord-py = { version = "~2.5.2", extras = ["voice"] }
 fastapi = { version = "~0.115.4", extras = ["standard"] }
-faststream = { version = "0.5.33", extras = ["rabbit", "otel", "prometheus"] }
+faststream = { version = "0.5.39", extras = ["rabbit", "otel", "prometheus"] }
 audioop-lts = { version = "^0.2.1", python = "^3.13" }
 
 [tool.poetry.group.opentelemetry.dependencies]
@@ -51,15 +51,16 @@ opentelemetry-instrumentation-fastapi = "0.48b0"
 setuptools = "*"
 pytest = "~8.3.0"
 pytest-xdist = { version = "~3.6.0", extras = ["psutil"] }
-pytest-rerunfailures = "~14.0.0"
+pytest-rerunfailures = "~15.0.0"
 mock = "~5.1.0"
+pytest-env = "~1.1.0"
 pytest-mock = "~3.14.0"
-pytest-asyncio = "~0.24.0"
+pytest-asyncio = "~0.25.2"
 pytest-cov = "~5.0.0"
 types-mock = "^5.1"
 dpytest = "0.7.0"
-ruff = "0.6.9"
-vulture = "2.13"
+ruff = "0.9.3"
+vulture = "2.14"
 radon = "^5.1.0"
 
 [tool.poetry.group.docs]
@@ -95,6 +96,9 @@ markers = [
     "e2e: end to end test suite",
     "remote_queue: remote queue unit and integration suite",
 ]
+
+[tool.pytest_env]
+OTEL_SDK_DISABLED = "true"
 
 [tool.coverage.run]
 source = ["pipo_hub"]

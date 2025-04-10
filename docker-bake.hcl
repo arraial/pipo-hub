@@ -43,11 +43,11 @@ target "_common" {
 target "docker-metadata-action" {}
 
 group "default" {
-  targets = ["image"]
+  targets = ["image-local"]
 }
 
-target "image" {
-  inherits = ["_common", "docker-metadata-action"]
+target "image-local" {
+  inherits = ["_common"]
   context = "."
   dockerfile = "Dockerfile"
   output = ["type=docker"]
@@ -61,7 +61,7 @@ target "test" {
 
 target "image-arch" {
   name = "image-${replace(arch, "/", "-")}"
-  inherits = ["image"]
+  inherits = ["image", "docker-metadata-action"]
   cache-from = ["type=registry,ref=${GITHUB_REPOSITORY_OWNER}/${IMAGE}:buildcache-${replace(arch, "/", "-")}"]
   cache-to = ["type=registry,ref=${GITHUB_REPOSITORY_OWNER}/${IMAGE}:buildcache-${replace(arch, "/", "-")},mode=max,image-manifest=true"]
   platform = [arch]

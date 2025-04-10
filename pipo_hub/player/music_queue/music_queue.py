@@ -70,14 +70,16 @@ class __RemoteMusicQueue(PlayerQueue):
         self._logger.info("Received request: %s", request.uuid)
         music = str(request.source)
         if request.uuid in self.__requests:
-            self._logger.debug("Item obtained from remote music queue: %s", music)
+            self._logger.debug(
+                "Item obtained from remote music queue: %s", music)
             try:
                 self.__requests[request.uuid] = +1
                 await asyncio.wait_for(
                     self.__playable_music.put(music),
                     timeout=settings.player.queue.timeout.consume,
                 )
-                self._logger.debug("Item stored in local music queue: %s", music)
+                self._logger.debug(
+                    "Item stored in local music queue: %s", music)
             except asyncio.TimeoutError:
                 self._logger.warning(
                     "Item consumption from remote queue timed out: %s", request.uuid
@@ -104,7 +106,8 @@ class __RemoteMusicQueue(PlayerQueue):
             while not self.__playable_music.empty():
                 self.__playable_music.get_nowait()
         except asyncio.QueueEmpty:
-            self._logger.warning("There was an error cleaning locally stored music.")
+            self._logger.warning(
+                "There was an error cleaning locally stored music.")
         self._logger.info("Locally stored music cleaned.")
 
 
