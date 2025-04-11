@@ -12,6 +12,7 @@ dispatcher_exch = RabbitExchange(
     settings.player.queue.service.dispatcher.exchange,
     type=ExchangeType.DIRECT,
     durable=True,
+    routing_key=settings.player.queue.service.dispatcher.routing_key,
 )
 
 server_publisher = router.publisher(

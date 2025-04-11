@@ -74,6 +74,7 @@ default:
       service:
         dispatcher:
           exchange: dispatcher
+          routing_key: dispatcher
         hub:
           queue: "@format hub_{this.SERVER_ID}"
           base_routing_key: "hub"
