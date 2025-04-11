@@ -73,6 +73,7 @@ default:
         consume: 900              # 15 minutes
       service:
         dispatcher:
+          declare: false
           exchange: dispatcher
           routing_key: dispatcher
         hub:
