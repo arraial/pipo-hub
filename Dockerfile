@@ -1,11 +1,13 @@
+ARG APP_VERSION=0.0.0
 ARG PORT=8080
 ARG PYTHON_VERSION=3.13.3
 ARG BASE_OS=slim-bookworm
 ARG BASE_IMAGE=python:${PYTHON_VERSION}-${BASE_OS}
 
-FROM $BASE_IMAGE AS base
+ARG UV_VERSION=0.7.12
+FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
 
-ARG POETRY_VERSION=2.1.2
+FROM $BASE_IMAGE AS base
 
 # python
 ENV APP_NAME="pipo_hub" \
@@ -18,38 +20,31 @@ ENV APP_NAME="pipo_hub" \
     PIP_NO_CACHE_DIR=off \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100 \
-    # fixes install error for cryptography package, as does locking cryptography version
-    CRYPTOGRAPHY_DONT_BUILD_RUST=1 \
     \
-    # poetry
-    # https://python-poetry.org/docs/configuration/#using-environment-variables
-    # make poetry install to this location
-    POETRY_HOME="/opt/poetry" \
-    # make poetry create the virtual environment in the project's root
-    # it gets named `.venv`
-    POETRY_VIRTUALENVS_CREATE=true \
-    POETRY_VIRTUALENVS_IN_PROJECT=true \
-    # do not ask interactive questions
-    POETRY_NO_INTERACTION=1 \
-    POETRY_CACHE_DIR="/tmp/poetry_cache" \
+    # uv
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_CACHE_DIR="/tmp/uv_cache" \
+    UV_PYTHON_DOWNLOADS=0 \
     \
     # requirements + virtual environment paths
-    PYSETUP_PATH="/opt/pysetup" \
-    VENV_PATH="/opt/pysetup/.venv"
+    PYSETUP_PATH="/app" \
+    VENV_PATH="/app/.venv" \
+    VENV_BIN="/app/.venv/bin"
 
-# prepend poetry and venv to path
-ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
+# prepend venv to path
+ENV PATH="$VENV_BIN:$PATH"
 
 # install required system dependencies
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get --no-install-recommends install -y \
     ffmpeg \
-    && pip install --upgrade pip setuptools wheel \
     && apt-get clean
 
 # `builder-base` stage is used to build deps + create virtual environment
 FROM base AS builder-base
+COPY --from=uv /uv /uvx /bin/
 
 # install required system dependencies
 RUN apt-get update \
@@ -62,31 +57,35 @@ RUN apt-get update \
     python3-dev \
     libffi-dev \
     libnacl-dev \
-    && apt-get clean \
-    && pip install --ignore-installed distlib --disable-pip-version-check \
-    cryptography==3.4.6 \
-    poetry==$POETRY_VERSION \
-    && poetry self add poetry-plugin-bundle
+    && apt-get clean
 
 # copy project requirement files to ensure they will be cached
 WORKDIR $PYSETUP_PATH
 COPY pyproject.toml README.md ./
-ARG PROGRAM_VERSION=0.0.0
-RUN poetry version $PROGRAM_VERSION
 
-# install runtime dependencies, internally uses $POETRY_VIRTUALENVS_IN_PROJECT
-RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry bundle venv --clear --without dev $VENV_PATH
+# install runtime dependencies
+RUN --mount=type=cache,target=$UV_CACHE_DIR \
+    #    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --no-install-project --no-editable
+
+# install application
+COPY ./${APP_NAME} ./${APP_NAME}/
+
+RUN --mount=type=cache,target=$(UV_CACHE_DIR) \
+    uv sync --all-extras --no-editable
 
 FROM builder-base AS test
-COPY --from=builder-base $VENV_PATH $VENV_PATH
-RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry bundle venv $VENV_PATH
-COPY ./${APP_NAME} ./${APP_NAME}/
-COPY ./tests ./tests
-RUN poetry run pytest .
+ARG APP_VERSION
+RUN --mount=type=cache,target=$UV_CACHE_DIR uv sync --group dev
+COPY ./tests ./tests/
+ENV PIPO_VERSION=${APP_VERSION}
+RUN uv run pytest .
+ENTRYPOINT [ "uv", "run", "pytest", "." ]
 
 # `production` image used for runtime
 FROM base AS production
-
+ARG APP_VERSION
 # app configuration
 ENV ENV=production \
     USERNAME=appuser \
@@ -97,10 +96,12 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
 USER $USERNAME
 
-COPY --from=builder-base --chown=$USERNAME:$USERNAME $VENV_PATH $VENV_PATH
-
-# install application
-COPY ./${APP_NAME} /${APP_NAME}/
+COPY --from=builder-base --chown=$USERNAME:$USERNAME $PYSETUP_PATH $PYSETUP_PATH
 
 EXPOSE $PORT
-ENTRYPOINT "${VENV_PATH}/bin/python" "-m" "${APP_NAME}"
+WORKDIR $PYSETUP_PATH
+ENV PIPO_VERSION=${APP_VERSION}
+COPY --chown=$USERNAME:$USERNAME ./scripts/healthcheck.py .
+HEALTHCHECK --interval=10s --timeout=5s --start-period=3s --retries=3 \
+    CMD ["python", "healthcheck.py"]
+ENTRYPOINT "python" "-m" "${APP_NAME}"

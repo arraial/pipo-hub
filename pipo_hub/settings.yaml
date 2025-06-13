@@ -22,6 +22,7 @@ default:
       endpoint: "/readyz"
   # Application name
   app: pipo.hub
+  version: "latest"
   # Discord channel
   channel:
   # Discord default voice channel

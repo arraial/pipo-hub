@@ -10,8 +10,8 @@ variable "PYTHON_VERSION" {
   default = "3.13.3"
 }
 
-variable "POETRY_VERSION" {
-  default = "2.1.2"
+variable "UV_VERSION" {
+  default = "0.7.12"
 }
 
 variable "TAG" {
@@ -24,9 +24,9 @@ variable "GITHUB_REPOSITORY_OWNER" {
 
 target "_common" {
   args = {
-    PROGRAM_VERSION = TAG
+    APP_VERSION = TAG
     PYTHON_VERSION = PYTHON_VERSION
-    POETRY_VERSION = POETRY_VERSION
+    UV_VERSION = UV_VERSION
     BUILDKIT_CONTEXT_KEEP_GIT_DIR = 1
   }
   tags = [

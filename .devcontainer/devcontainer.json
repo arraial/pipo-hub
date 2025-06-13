@@ -17,7 +17,9 @@
             }
         }
     },
-    "postCreateCommand": "make poetry_setup dev_setup;",
-    "runArgs": ["--name", "pipo-hub-devcontainer"]
+    "postCreateCommand": "make dev_env_setup dev_setup;",
+    "runArgs": [
+        "--name",
+        "pipo-hub-devcontainer"
+    ]
 }
-
