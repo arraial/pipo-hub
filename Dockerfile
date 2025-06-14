@@ -4,8 +4,11 @@ ARG PYTHON_VERSION=3.13.3
 ARG BASE_OS=slim-bookworm
 ARG BASE_IMAGE=python:${PYTHON_VERSION}-${BASE_OS}
 
+ARG FFMPEG_VERSION=7.1.1
 ARG UV_VERSION=0.7.12
+
 FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
+FROM mwader/static-ffmpeg:${FFMPEG_VERSION} AS ffmpeg
 
 FROM $BASE_IMAGE AS base
 
@@ -52,12 +55,14 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y \
     build-essential \
     libc-dev \
-    libssl-dev \
     # discord.py[voice] dependencies
     python3-dev \
     libffi-dev \
     libnacl-dev \
+    libssl-dev \
     && apt-get clean
+
+COPY --from=ffmpeg /ffmpeg /ffprobe /usr/local/bin/
 
 # copy project requirement files to ensure they will be cached
 WORKDIR $PYSETUP_PATH
@@ -84,24 +89,33 @@ RUN uv run pytest .
 ENTRYPOINT [ "uv", "run", "pytest", "." ]
 
 # `production` image used for runtime
-FROM base AS production
+FROM gcr.io/distroless/python3-debian12:nonroot AS production
 ARG APP_VERSION
-# app configuration
+COPY --from=ffmpeg --chown=nobody:nobody /ffmpeg /ffprobe /usr/local/bin/
+
 ENV ENV=production \
-    USERNAME=appuser \
-    USER_UID=1000 \
-    USER_GID=1000
+    APP_NAME="pipo_hub" \
+    PYTHONUNBUFFERED=1 \
+    # prevents python creating .pyc files
+    PYTHONDONTWRITEBYTECODE=1 \
+    \
+    # pip
+    PIP_NO_CACHE_DIR=off \
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
+    PIP_DEFAULT_TIMEOUT=100 \
+    \
+    # requirements + virtual environment paths
+    PYSETUP_PATH="/app" \
+    VENV_PATH="/app/.venv" \
+    VENV_BIN="/app/.venv/bin" \
+    PIPO_VERSION=${APP_VERSION}
 
-RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
-USER $USERNAME
-
-COPY --from=builder-base --chown=$USERNAME:$USERNAME $PYSETUP_PATH $PYSETUP_PATH
-
-EXPOSE $PORT
+# prepend venv to path
+ENV PATH="$VENV_BIN:$PATH"
+COPY --from=builder-base --chown=nobody:nobody $PYSETUP_PATH $PYSETUP_PATH
 WORKDIR $PYSETUP_PATH
-ENV PIPO_VERSION=${APP_VERSION}
-COPY --chown=$USERNAME:$USERNAME ./scripts/healthcheck.py .
+EXPOSE $PORT
+COPY --chown=nobody:nobody ./scripts/healthcheck.py .
 HEALTHCHECK --interval=10s --timeout=5s --start-period=3s --retries=3 \
     CMD ["python", "healthcheck.py"]
 ENTRYPOINT "python" "-m" "${APP_NAME}"
