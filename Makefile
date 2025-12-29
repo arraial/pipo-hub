@@ -39,7 +39,7 @@ dev_env_setup:
 
 .PHONY: setup
 setup:
-	$(PACKAGE_MANAGER) sync
+	$(PACKAGE_MANAGER) sync --no-dev
 
 .PHONY: test_setup
 test_setup:
@@ -83,9 +83,9 @@ test_secrets_file:
 .PHONY: test
 test:
 	if [ -f $(TEST_SECRETS) ]; then \
-		export SECRETS_FOR_DYNACONF=$(TEST_SECRETS) && $(PACKAGE_MANAGER) tool run pytest; \
+		export SECRETS_FOR_DYNACONF=$(TEST_SECRETS) && $(PACKAGE_MANAGER) run pytest; \
 	else \
-		$(PACKAGE_MANAGER) tool run pytest; \
+		$(PACKAGE_MANAGER) run pytest; \
 	fi
 
 .PHONY: coverage

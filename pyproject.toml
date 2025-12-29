@@ -28,7 +28,7 @@ maintainers = [
 license = {text = "MIT"}
 requires-python = ">=3.11,<3.14"
 dependencies = [
-    "uuid6>=2024.7,<2025.0",
+    "uuid6~=2025.0.1",
     "requests>=2.32,<3.0",
     "pydantic~=2.12.0",
     "expiringdict>=1.2,<2.0",
@@ -36,9 +36,8 @@ dependencies = [
     "discord-py[voice]~=2.5.2",
     "fastapi[standard]~=0.115.4",
     "faststream[otel,prometheus,rabbit]==0.5.39",
-    "audioop-lts<1.0.0,>=0.2.1; python_version ~= \"3.13\"",
+    "audioop-lts<1.0.0,>=0.2.1; python_version>='3.13'",
 ]
-
 
 [dependency-groups]
 opentelemetry = [
