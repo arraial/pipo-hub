@@ -3,21 +3,30 @@
     "image": "mcr.microsoft.com/devcontainers/base:bookworm",
     "features": {
         "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-        "ghcr.io/devcontainers/features/git:1": {},
-        "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
         "ghcr.io/devcontainers/features/python:1": {
             "version": "3.11",
             "installTools": false
         }
     },
+    "remoteUser": "vscode",
     "customizations": {
         "vscode": {
             "settings": {
-                "python.defaultInterpreterPath": ".venv/bin/python"
-            }
+                "python.docstring.format": "google",
+                "python.defaultInterpreterPath": ".venv/bin/python",
+                "python.testing.pytestEnabled": true,
+                "python.testing.pytestArgs": [
+                    "tests"
+                ]
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "docker.docker"
+            ]
         }
     },
-    "postCreateCommand": "make dev_env_setup dev_setup;",
+    "postCreateCommand": "make dev_env_setup dev_setup",
     "runArgs": [
         "--name",
         "pipo-hub-devcontainer"

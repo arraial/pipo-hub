@@ -1,12 +1,11 @@
-import discord.ext.commands as commands
-import pytest
 import discord.ext.test as dpytest
-from pipo_hub.bot import PipoBot
-import pytest_asyncio
 import pytest
+import pytest_asyncio
+from discord.ext import commands
 
-from pipo_hub.config import settings
+from pipo_hub.bot import PipoBot
 from pipo_hub.cogs.music_bot import MusicBot
+from pipo_hub.config import settings
 
 
 @pytest.mark.integration

@@ -3,8 +3,8 @@ import pytest
 from fastapi.testclient import TestClient
 from faststream.rabbit import TestRabbitBroker
 
-from pipo_hub.config import settings
 from pipo_hub.app import create_app, get_broker
+from pipo_hub.config import settings
 
 
 @pytest.mark.integration

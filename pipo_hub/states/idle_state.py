@@ -1,5 +1,5 @@
-import random
 import asyncio
+import random
 from typing import List
 
 from discord.ext.commands import Context as Dctx

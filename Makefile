@@ -2,7 +2,7 @@ APP=pipo_hub
 IMAGE_TAG=arraial/$(APP)
 CONFIG_PATH=pyproject.toml
 PACKAGE_MANAGER=uv
-UV_VERSION=0.7.12
+UV_VERSION=0.9.18
 PRINT=python -c "import sys; print(str(sys.argv[1]))"
 DOCUMENTATION=docs
 DIAGRAMS_FORMAT=plantuml
@@ -37,9 +37,6 @@ help:
 dev_env_setup:
 	APP_VERSION=$(UV_VERSION) curl -LsSf https://astral.sh/uv/install.sh | sh
 
-.PHONY: poetry_setup
-poetry_setup: dev_env_setup
-
 .PHONY: setup
 setup:
 	$(PACKAGE_MANAGER) sync
@@ -62,6 +59,7 @@ check:
 
 .PHONY: format
 format:
+	-$(PACKAGE_MANAGER) run ruff check --fix .
 	-$(PACKAGE_MANAGER) run ruff format .
 
 .PHONY: vulture
@@ -113,11 +111,12 @@ dist:
 
 .PHONY: image
 image: docs
-	docker buildx bake image-local
+	docker buildx bake image
 
 .PHONY: test_image
 test_image:
 	docker buildx bake test
+	docker run --rm $(APP):test
 
 .PHONY: run_image
 run_image: image

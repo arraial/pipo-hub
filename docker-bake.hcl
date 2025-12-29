@@ -7,15 +7,15 @@ variable "IMAGE" {
 }
 
 variable "PYTHON_VERSION" {
-  default = "3.13.3"
+  default = "3.13"
 }
 
 variable "UV_VERSION" {
-  default = "0.7.12"
+  default = "0.9.18"
 }
 
 variable "TAG" {
-  default = "0.0.0"
+  default = "local"
 }
 
 variable "GITHUB_REPOSITORY_OWNER" {
@@ -30,8 +30,8 @@ target "_common" {
     BUILDKIT_CONTEXT_KEEP_GIT_DIR = 1
   }
   tags = [
-    "${GITHUB_REPOSITORY_OWNER}/${IMAGE}:${TAG}",
-    "${GITHUB_REPOSITORY_OWNER}/${IMAGE}:latest"
+    "${GITHUB_REPOSITORY_OWNER}/${IMAGE}:latest",
+    "${GITHUB_REPOSITORY_OWNER}/${IMAGE}:${TAG}"
   ]
   labels = {
     "org.opencontainers.image.version" = "${TAG}"
@@ -43,10 +43,10 @@ target "_common" {
 target "docker-metadata-action" {}
 
 group "default" {
-  targets = ["image-local"]
+  targets = ["image"]
 }
 
-target "image-local" {
+target "image" {
   inherits = ["_common"]
   context = "."
   dockerfile = "Dockerfile"
@@ -55,12 +55,15 @@ target "image-local" {
 
 target "test" {
   target = "test"
-  inherits = ["image-local"]
-  output = ["type=cacheonly"]
+  inherits = ["image"]
+  output = ["type=docker"]
+  tags = [
+    "${IMAGE}:test"
+  ]
 }
 
 target "image-arch" {
-  inherits = ["image-local", "docker-metadata-action"]
+  inherits = ["image", "docker-metadata-action"]
   output = ["type=registry"]
   sbom = true
   platforms = ARCHS
@@ -71,7 +74,7 @@ target "image-arch" {
 
 target "image-arch-cache" {
   name = "image-arch-cache-${replace(arch, "/", "-")}"
-  inherits = ["image-local", "docker-metadata-action"]
+  inherits = ["image", "docker-metadata-action"]
   output = ["type=cacheonly"]
   cache-from = ["type=registry,ref=${GITHUB_REPOSITORY_OWNER}/${IMAGE}:buildcache-${replace(arch, "/", "-")}"]
   cache-to = ["type=registry,ref=${GITHUB_REPOSITORY_OWNER}/${IMAGE}:buildcache-${replace(arch, "/", "-")},mode=max,oci-mediatypes=true,image-manifest=true"]
