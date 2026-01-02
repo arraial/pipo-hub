@@ -1,15 +1,15 @@
 import asyncio
+
 import pytest
 from faststream.rabbit import TestRabbitBroker
 
 import tests.constants
-from tests.conftest import Helpers
-
-from pipo_hub.config import settings
 from pipo_hub.broker import load_broker
-from pipo_hub.player.music_queue.music_queue import music_queue
-from pipo_hub.player.music_queue.models.music_request import MusicRequest
+from pipo_hub.config import settings
 from pipo_hub.player.music_queue.handlers import server_publisher
+from pipo_hub.player.music_queue.models.music_request import MusicRequest
+from pipo_hub.player.music_queue.music_queue import music_queue
+from tests.conftest import Helpers
 
 
 @pytest.mark.wip

@@ -2,14 +2,16 @@
 import asyncio
 import signal
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
-from faststream.asgi import make_ping_asgi, get, AsgiResponse
-from prometheus_client import make_asgi_app, REGISTRY
+from faststream.asgi import AsgiResponse, get, make_ping_asgi
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from pipo_hub.broker import load_broker
-from pipo_hub.config import settings
+from prometheus_client import REGISTRY, make_asgi_app
+
 from pipo_hub.bot import PipoBot
+from pipo_hub.broker import load_broker
 from pipo_hub.cogs.music_bot import MusicBot
+from pipo_hub.config import settings
 from pipo_hub.signal_manager import SignalManager
 
 __broker = load_broker(settings.app)

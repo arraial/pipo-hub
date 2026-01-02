@@ -1,0 +1,105 @@
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+
+services:
+  hub:
+    container_name: pipo.hub
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file: .env
+    networks:
+      - frontend
+      - backend
+    ports:
+      - "8080:8080"
+    deploy:
+      restart_policy:
+        delay: 5s
+        max_attempts: 3
+        condition: on-failure
+
+  dispatch:
+    image: arraial/pipo_dispatch:0.1.2
+    container_name: pipo.dispatch
+    env_file: .env
+    networks:
+      - backend
+    ports:
+      - "8081:8080"
+    deploy:
+      restart_policy:
+        delay: 5s
+        max_attempts: 3
+        condition: on-failure
+
+  transmuter-youtube:
+    image: arraial/pipo_transmuter_youtube:0.1.0
+    container_name: pipo.transmuter.youtube
+    env_file: .env
+    networks:
+      - backend
+    ports:
+      - "8082:8080"
+    deploy:
+      restart_policy:
+        delay: 5s
+        max_attempts: 3
+        condition: on-failure
+      resources:
+        reservations:
+          cpus: 0.1
+          memory: 150M
+        limits:
+          cpus: 0.3
+          memory: 300M
+
+  transmuter-spotify:
+    image: arraial/pipo_transmuter_spotify:0.1.0
+    container_name: pipo.transmuter.spotify
+    env_file: .env
+    networks:
+      - backend
+    ports:
+      - "8083:8080"
+    deploy:
+      restart_policy:
+        delay: 5s
+        max_attempts: 3
+        condition: on-failure
+      resources:
+        reservations:
+          cpus: 0.1
+          memory: 100M
+        limits:
+          cpus: 0.3
+          memory: 300M
+
+  otel:
+    container_name: pipo.otel
+    image: otel/opentelemetry-collector:0.114.0
+    restart: on-failure
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.example.yaml:/etc/otel-collector-config.yaml
+    networks:
+      - backend
+    ports:
+      - "8888:8888"   # Prometheus metrics exposed by the collector
+      - "8889:8889"   # Prometheus exporter metrics
+      - "4317:4317"   # OTLP gRPC receiver
+      - "13133:13133" # health_check extension
+
+  jaeger:
+    container_name: pipo.jaeger
+    image: jaegertracing/all-in-one:1.63.0
+    restart: on-failure
+    networks:
+      - frontend
+      - backend
+    ports:
+      - "6831:6831/udp" # UDP port for Jaeger agent
+      - "16686:16686"   # Web UI

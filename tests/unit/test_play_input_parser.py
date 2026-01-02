@@ -2,8 +2,8 @@
 import pytest
 
 import tests.constants
-from pipo_hub.config import settings
 from pipo_hub.cogs.music_bot import InputParser
+from pipo_hub.config import settings
 
 
 @pytest.mark.unit

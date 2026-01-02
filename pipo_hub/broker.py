@@ -1,13 +1,15 @@
-import ssl
 import logging
+import ssl
+
 from faststream.rabbit import RabbitBroker
-from faststream.security import BaseSecurity
 from faststream.rabbit.opentelemetry import RabbitTelemetryMiddleware
 from faststream.rabbit.prometheus import RabbitPrometheusMiddleware
+from faststream.security import BaseSecurity
+from prometheus_client import REGISTRY
+
+from pipo_hub.config import settings
 from pipo_hub.player.music_queue.handlers import router
 from pipo_hub.telemetry import setup_telemetry
-from pipo_hub.config import settings
-from prometheus_client import REGISTRY
 
 
 def load_broker(service_name: str) -> RabbitBroker:

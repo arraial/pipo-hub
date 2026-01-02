@@ -1,6 +1,7 @@
 ### Custom ###
 poetry.toml
 poetry.lock
+uv.lock
 .ruff_cache
 docs/_build
 docs/_static

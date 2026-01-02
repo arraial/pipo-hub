@@ -1,15 +1,16 @@
-import random as rand
-import logging
 import functools
-import uuid6
-from typing import Iterable, List
-from pydantic import BaseModel
+import logging
+import random as rand
 import socket
-import pytest
+from typing import Iterable, List
 
-from tests import constants
+import pytest
+import uuid6
+from pydantic import BaseModel
+
 from pipo_hub.config import settings
 from pipo_hub.telemetry import setup_telemetry
+from tests import constants
 
 
 class Helpers:

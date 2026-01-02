@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from typing import Set
+
 from opentelemetry import metrics
 
 from pipo_hub.command.command import Command

@@ -1,7 +1,8 @@
 APP=pipo_hub
+IMAGE_TAG=arraial/$(APP)
 CONFIG_PATH=pyproject.toml
-POETRY=poetry
-POETRY_VERSION=1.8.4
+PACKAGE_MANAGER=uv
+UV_VERSION=0.9.18
 PRINT=python -c "import sys; print(str(sys.argv[1]))"
 DOCUMENTATION=docs
 DIAGRAMS_FORMAT=plantuml
@@ -16,7 +17,7 @@ SECRETS_JSON=$(shell echo '{"TEST_RABBITMQ_URL": "$(TEST_RABBITMQ_URL)"}')
 help:
 	$(PRINT) "Usage:"
 	$(PRINT) "    help          show this message"
-	$(PRINT) "    poetry_setup  install poetry to manage python envs and workflows"
+	$(PRINT) "    dev_env_setup install manager for python envs and workflows"
 	$(PRINT) "    setup         build virtual environment and install dependencies"
 	$(PRINT) "    test_setup    build virtual environment and install test dependencies"
 	$(PRINT) "    dev_setup     build virtual environment and install dev dependencies"
@@ -32,59 +33,59 @@ help:
 	$(PRINT) "    test_image    run test suite in a container"
 	$(PRINT) "    run_image     run app docker image in a container"
 
-.PHONY: poetry_setup
-poetry_setup:
-	curl -sSL https://install.python-poetry.org | python - --version $(POETRY_VERSION)
-	$(POETRY) config virtualenvs.in-project true --local
+.PHONY: dev_env_setup
+dev_env_setup:
+	APP_VERSION=$(UV_VERSION) curl -LsSf https://astral.sh/uv/install.sh | sh
 
 .PHONY: setup
 setup:
-	$(POETRY) install -n --all-extras --without dev
+	$(PACKAGE_MANAGER) sync --no-dev
 
 .PHONY: test_setup
 test_setup:
-	$(POETRY) install -n --all-extras
+	$(PACKAGE_MANAGER) sync --group dev
 
 .PHONY: dev_setup
 dev_setup:
-	$(POETRY) install -n --all-extras --with docs
+	$(PACKAGE_MANAGER) sync --group dev --group docs
 
 .PHONY: update_deps
 update_deps:
-	$(POETRY) update
+	$(PACKAGE_MANAGER) lock --upgrade
 
 .PHONY: check
 check:
-	-$(POETRY) run ruff check .
+	-$(PACKAGE_MANAGER) run ruff check .
 
 .PHONY: format
 format:
-	-$(POETRY) run ruff format .
+	-$(PACKAGE_MANAGER) run ruff check --fix .
+	-$(PACKAGE_MANAGER) run ruff format .
 
 .PHONY: vulture
 vulture:
-	-$(POETRY) run vulture
+	-$(PACKAGE_MANAGER) run vulture
 
 .PHONY: metrics
 metrics:
-	$(POETRY) run radon cc -a -s -o SCORE $(APP)
-	$(POETRY) run radon raw -s $(APP)
-	$(POETRY) run radon mi -s $(APP)
+	$(PACKAGE_MANAGER) run radon cc -a -s -o SCORE $(APP)
+	$(PACKAGE_MANAGER) run radon raw -s $(APP)
+	$(PACKAGE_MANAGER) run radon mi -s $(APP)
 
 .PHONY: lint
 lint: check vulture
 
 .PHONY: test_secrets_file
 test_secrets_file:
-	$(POETRY) run dynaconf write yaml -y -e test -p "$(TEST_FOLDER)" -s queue_broker_url="${TEST_RABBITMQ_URL}"
+	$(PACKAGE_MANAGER) run dynaconf write yaml -y -e test -p "$(TEST_FOLDER)" -s queue_broker_url="${TEST_RABBITMQ_URL}"
 	@echo $(TEST_SECRETS)
 
 .PHONY: test
 test:
 	if [ -f $(TEST_SECRETS) ]; then \
-		export SECRETS_FOR_DYNACONF=$(TEST_SECRETS) && $(POETRY) run pytest; \
+		export SECRETS_FOR_DYNACONF=$(TEST_SECRETS) && $(PACKAGE_MANAGER) run pytest; \
 	else \
-		$(POETRY) run pytest; \
+		$(PACKAGE_MANAGER) run pytest; \
 	fi
 
 .PHONY: coverage
@@ -94,28 +95,29 @@ coverage:
 .PHONY: docs
 docs:
 	mkdir -p $(DOCUMENTATION)/_static $(DOCUMENTATION)/_diagrams/src
-	$(POETRY) run pyreverse -p $(APP) \
+	$(PACKAGE_MANAGER) run pyreverse -p $(APP) \
 		--colorized \
 		-o $(DIAGRAMS_FORMAT) \
 		-d $(DOCUMENTATION)/_diagrams/src $(APP)
-	$(POETRY) run make -C $(DOCUMENTATION) html
+	$(PACKAGE_MANAGER) run make -C $(DOCUMENTATION) html
 
 .PHONY: set_version
 set_version:
-	$(POETRY) version $$VERSION
+	echo "Deprecated"
 
 .PHONY: dist
 dist:
-	$(POETRY) dist
+	$(PACKAGE_MANAGER) build
 
 .PHONY: image
 image: docs
-	docker buildx bake image-local
+	docker buildx bake image
 
 .PHONY: test_image
 test_image:
 	docker buildx bake test
+	docker run --rm $(APP):test
 
 .PHONY: run_image
 run_image: image
-	docker run -d --name $(APP) --env-file .env $(APP):latest
+	docker run -d --name $(APP) --env-file .env $(IMAGE_TAG):latest

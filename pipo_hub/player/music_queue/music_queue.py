@@ -1,22 +1,23 @@
 import asyncio
 from typing import Dict, Iterable, Optional
-from opentelemetry import trace
-from opentelemetry.trace import SpanKind
-import uuid6
+
 import faststream.rabbit
+import uuid6
 from expiringdict import ExpiringDict
 from faststream.opentelemetry import Baggage
+from opentelemetry import trace
+from opentelemetry.trace import SpanKind
 
 from pipo_hub.config import settings
-from pipo_hub.player.queue import PlayerQueue
-from pipo_hub.player.music_queue.models.music import Music
-from pipo_hub.player.music_queue.models.music_request import MusicRequest
 from pipo_hub.player.music_queue.handlers import (
-    router,
-    hub_queue,
     hub_exch,
+    hub_queue,
+    router,
     server_publisher,
 )
+from pipo_hub.player.music_queue.models.music import Music
+from pipo_hub.player.music_queue.models.music_request import MusicRequest
+from pipo_hub.player.queue import PlayerQueue
 
 tracer = trace.get_tracer(__name__)
 
@@ -70,16 +71,14 @@ class __RemoteMusicQueue(PlayerQueue):
         self._logger.info("Received request: %s", request.uuid)
         music = str(request.source)
         if request.uuid in self.__requests:
-            self._logger.debug(
-                "Item obtained from remote music queue: %s", music)
+            self._logger.debug("Item obtained from remote music queue: %s", music)
             try:
                 self.__requests[request.uuid] = +1
                 await asyncio.wait_for(
                     self.__playable_music.put(music),
                     timeout=settings.player.queue.timeout.consume,
                 )
-                self._logger.debug(
-                    "Item stored in local music queue: %s", music)
+                self._logger.debug("Item stored in local music queue: %s", music)
             except asyncio.TimeoutError:
                 self._logger.warning(
                     "Item consumption from remote queue timed out: %s", request.uuid
@@ -106,8 +105,7 @@ class __RemoteMusicQueue(PlayerQueue):
             while not self.__playable_music.empty():
                 self.__playable_music.get_nowait()
         except asyncio.QueueEmpty:
-            self._logger.warning(
-                "There was an error cleaning locally stored music.")
+            self._logger.warning("There was an error cleaning locally stored music.")
         self._logger.info("Locally stored music cleaned.")
 
 

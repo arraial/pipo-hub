@@ -5,9 +5,9 @@ import mock
 import pytest
 
 import tests.constants
+from pipo_hub.states.disconnected_state import DisconnectedState
 from pipo_hub.states.idle_state import IdleState
 from pipo_hub.states.playing_state import PlayingState
-from pipo_hub.states.disconnected_state import DisconnectedState
 
 
 @pytest.mark.unit

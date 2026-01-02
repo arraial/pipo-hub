@@ -2,8 +2,9 @@ from faststream.rabbit import (
     ExchangeType,
     RabbitExchange,
     RabbitQueue,
+    RabbitRouter,
 )
-from faststream.rabbit import RabbitRouter
+
 from pipo_hub.config import settings
 
 router = RabbitRouter()

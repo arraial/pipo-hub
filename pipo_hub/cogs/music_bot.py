@@ -1,12 +1,11 @@
 #!usr/bin/env python3
-import logging
 import argparse
+import logging
 from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
 from discord.ext import commands
 
-from pipo_hub.config import settings
 from pipo_hub.command import (
     Clear,
     CommandQueue,
@@ -17,6 +16,7 @@ from pipo_hub.command import (
     Skip,
     Status,
 )
+from pipo_hub.config import settings
 from pipo_hub.pipo import Pipo
 
 
